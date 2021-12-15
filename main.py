@@ -1,16 +1,6 @@
 
 import pandas as pd
 
-influence_achiever = []
-influence_player = []
-influence_socialiser = []
-influence_freeSpirit = []
-influence_disruptor = []
-influence_philanthropist = []
-
-influence_MI = []
-influence_ME = []
-influence_amotI = []
 
 """
 Cette fonction retourne une liste de score correspondant à l'élément ludique de l'entrée
@@ -26,13 +16,12 @@ def score_influence (name_fichier, name_fichier2, eleve):
     #On enleve la prmeière colonne qui ne sert à rien ici
     del data_pvalues['Unnamed: 0']
     del data_influences['Unnamed: 0']
-    #print(data_pvalues)
 
     #On parcourt chaque profil et on regarde les valeurs pertinantes
     score_MI = 0
     score_ME = 0
     score_AMOT = 0
-    for col in data_pvalues.columns:
+    for ligne in data_pvalues.index:
         #On intialise le score
         score = 0
         #On parcourt les valeurs de MI, ME et AM
@@ -130,29 +119,22 @@ def vecteur_influence_Motivation (eleve) :
     return liste_score_joueur
 
     #On remplit les score associé à chaque joueur
-    """influence_MI.append(liste_score_joueur[0])
-    influence_ME.append(liste_score_joueur[1])
-    influence_amotI.append(liste_score_joueur[2])"""
 
 def vecteur_influence_Hexad (eleve) :
     #On calcule les différents vecteurs pour chaque type d'éléments ludiques
     vecteur_tot = []
-    vecteur_tot.append(score_influence("Hexad/avatarPathCoefs.csv","Hexad/avatarpVals.csv", eleve)) #AVATARS : 0
-    vecteur_tot.append(score_influence("Hexad/badgesPathCoefs.csv", "Hexad/badgespVals.csv", eleve)) #BADGES : 1
-    vecteur_tot.append(score_influence("Hexad/progressPathCoefs.csv", "Hexad/progresspVals.csv", eleve)) #PROGRESS : 2
-    vecteur_tot.append(score_influence("Hexad/rankingPathCoefs.csv", "Hexad/rankingpVals.csv", eleve)) #RANKING : 3
-    vecteur_tot.append(score_influence("Hexad/scorePathCoefs.csv", "Hexad/scorepVals.csv", eleve)) #SCORE : 4
-    vecteur_tot.append(score_influence("Hexad/timerPathCoefs.csv", "Hexad/timerpVals.csv", eleve)) #TIMER : 5
+    vecteur_tot.append(score_influence_hexad("Hexad/avatarPathCoefs.csv","Hexad/avatarpVals.csv", eleve)) #AVATARS : 0
+    vecteur_tot.append(score_influence_hexad("Hexad/badgesPathCoefs.csv", "Hexad/badgespVals.csv", eleve)) #BADGES : 1
+    vecteur_tot.append(score_influence_hexad("Hexad/progressPathCoefs.csv", "Hexad/progresspVals.csv", eleve)) #PROGRESS : 2
+    vecteur_tot.append(score_influence_hexad("Hexad/rankingPathCoefs.csv", "Hexad/rankingpVals.csv", eleve)) #RANKING : 3
+    vecteur_tot.append(score_influence_hexad("Hexad/scorePathCoefs.csv", "Hexad/scorepVals.csv", eleve)) #SCORE : 4
+    vecteur_tot.append(score_influence_hexad("Hexad/timerPathCoefs.csv", "Hexad/timerpVals.csv", eleve)) #TIMER : 5
 
     #Tableau des valeurs de score pour chaque type de joueur
     liste_score_joueur = []
     #On regarde pour chaque type de joueur quel sont les activités ludiques les plus adéquates
     for k in range(len(vecteur_tot[0])):
-        activite = []
-        for j in range(len(vecteur_tot)):
-            activite.append([j, vecteur_tot[j][k]])
-        activite.sort(key=lambda x: x[1], reverse=True)
-        #print(activite)
+        liste_score_joueur.append([k, vecteur_tot[k][0] + vecteur_tot[k][1] - vecteur_tot[k][2]])
 
     liste_score_joueur.sort(key=lambda x: x[1], reverse=True)
     return liste_score_joueur
@@ -177,30 +159,25 @@ def replace_name_element (liste):
 if __name__ == '__main__':
     #On choisit un eleve
     eleves = pd.read_csv("donnees_eleves/userStats.csv", sep=";")
-    for i in range(300):
-
+    """for i in range(300):
         eleve = eleves.iloc[i, :]
     #print(type(eleve))
     #On lit les fichiers et on calcule
-        vecteur_influence_Hexad(eleve)
-        liste_test = vecteur_influence_Motivation(eleve)
-        liste_test = replace_name_element(liste_test)
-        print(liste_test)
-
-    """#On replace les numero par les noms des éléments ludiques
-    influence_disruptor = replace_name_element(influence_disruptor[0])
-    influence_player =replace_name_element(influence_player[0])
-    influence_philanthropist = replace_name_element(influence_philanthropist[0])
-    influence_socialiser = replace_name_element(influence_socialiser[0])
-    influence_freeSpirit = replace_name_element(influence_freeSpirit[0])
-    influence_achiever = replace_name_element(influence_achiever[0])
-
-    influence_ME = replace_name_element(influence_ME[0])
-    influence_MI = replace_name_element(influence_MI[0])
-    influence_amotI = replace_name_element(influence_amotI[0])"""
-    # print(influence_MI)
-    # print(influence_ME)
-    # print(influence_amotI)
+        #vecteur_influence_Hexad(eleve)
+        liste_motiv = vecteur_influence_Motivation(eleve)
+        liste_motiv = replace_name_element(liste_motiv)
+        # print(liste_motiv)
+        liste_hexad = vecteur_influence_Hexad(eleve)
+        liste_hexad = replace_name_element(liste_hexad)
+        print(liste_hexad)"""
+    eleve = eleves.iloc[0,:]
+    liste_motiv = vecteur_influence_Motivation(eleve)
+    liste_motiv = replace_name_element(liste_motiv)
+    print(liste_motiv)
+    # print(liste_motiv)
+    liste_hexad = vecteur_influence_Hexad(eleve)
+    liste_hexad = replace_name_element(liste_hexad)
+    print(liste_hexad)
 
 
 
