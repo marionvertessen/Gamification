@@ -31,7 +31,7 @@ def score_influence (name_fichier, name_fichier2, eleve):
     #On parcourt chaque profil et on regarde les valeurs pertinantes
     score_MI = 0
     score_ME = 0
-    score_AMOT =0
+    score_AMOT = 0
     for col in data_pvalues.columns:
         #On intialise le score
         score = 0
