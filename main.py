@@ -37,9 +37,9 @@ def score_influence (name_fichier, name_fichier2, eleve):
         score = 0
         #On parcourt les valeurs de MI, ME et AM
         # Si la pvalues est inférieur à 0 on additionne au score l'influence correpsondante
-        if data_pvalues[col][0] < 0.1 :
+        if data_pvalues[col][0] < 0.1:
             score_MI += data_influences[col][0] * (eleve['micoI'] + eleve['miacI'] + eleve['mistI'])
-        if data_pvalues[col][1] < 0.1 :
+        if data_pvalues[col][1] < 0.1:
             score_ME += data_influences[col][1] * (eleve['meidI'] + eleve['meinI'] + eleve['mereI'])
         if data_pvalues[col][2] < 0.1:
             score_AMOT -= data_influences[col][2] * eleve['amotI']
