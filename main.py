@@ -225,7 +225,7 @@ def algo_adaptation2 (vecteur_hexad, vecteur_motivation):
             if vecteur_hexad[k][0] == vecteur_motivation[k][0]:
                 if vecteur_hexad[k][1] + vecteur_motivation[i][1] > score_max:
                     element = vecteur_hexad[k][0]
-                    score_max = vecteur_hexad[k][1] + 0.3*vecteur_motivation[i][1]
+                    score_max = 0.7*vecteur_hexad[k][1] + 0.3*vecteur_motivation[i][1]
     return element
 
 def algo_anti_adaptation (vecteur_hexad, vecteur_motivation):
