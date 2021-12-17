@@ -121,50 +121,176 @@ def vecteur_influence_Hexad (eleve) :
 def replace_name_element (liste):
     for k in range (len(liste)):
         if liste[k][0] == 0:
-            liste[k][0] = "Avatar"
+            liste[k][0] = "avatar"
         if liste[k][0] == 1:
-            liste[k][0] = "Badge"
+            liste[k][0] = "badge"
         if liste[k][0] == 2:
-            liste[k][0] = "Progress"
+            liste[k][0] = "progress"
         if liste[k][0] == 3:
-            liste[k][0] = "Ranking"
+            liste[k][0] = "ranking"
         if liste[k][0] == 4:
-            liste[k][0] = "Score"
+            liste[k][0] = "score"
         if liste[k][0] == 5:
-            liste[k][0] = "Timer"
+            liste[k][0] = "timer"
     return liste
 
-if __name__ == '__main__':
-    #On choisit un eleve
+def algo_adaptation (vecteur_hexad, vecteur_motivation):
+    score_pos = []
+    score_medium = []
+    score_negatif = []
+    for k in range(len(vecteur_hexad)):
+        nameH = vecteur_hexad[k][0]
+        scoreH = vecteur_hexad[k][1]
+        for i in range (len(vecteur_motivation)):
+            nameM = vecteur_motivation[i][0]
+            scoreM = vecteur_motivation[i][1]
+            if nameM == nameH :
+                if scoreM >= 0 and scoreH >=0:
+                    score = scoreM + scoreH
+                    score_pos.append([nameH, score])
+                elif scoreM * scoreH < 0 :
+                    score = scoreM + scoreH
+                    score_medium.append([nameH, score])
+                else :
+                    score = scoreM + scoreH
+                    score_negatif.append([nameH, score])
+    if len(score_pos) != 0 :
+        score_max = score_pos[0][1]
+        elementF = score_pos[0][0]
+        for element in score_pos:
+            if element[1] > score_max:
+                elementF = element[0]
+    elif len(score_medium) != 0 :
+        score_max = score_medium[0][1]
+        elementF = score_medium[0][0]
+        for element in score_medium:
+            if element[1] > score_max:
+                elementF = element[0]
+    else :
+        score_max = score_negatif[0][1]
+        elementF = score_negatif[0][0]
+        for element in score_negatif:
+            if element[1] > score_max:
+                elementF = element[0]
+    return elementF
+
+def algo_adaptation2 (vecteur_hexad, vecteur_motivation):
+    score_max = -1000000
+    element = vecteur_hexad[0][0]
+    for k in range (len(vecteur_hexad)):
+        for i in range(len(vecteur_motivation)):
+            if vecteur_hexad[k][0] == vecteur_motivation[k][0]:
+                if vecteur_hexad[k][1] + vecteur_motivation[i][1] > score_max:
+                    element = vecteur_hexad[k][0]
+                    score_max = vecteur_hexad[k][1] + 0.3*vecteur_motivation[i][1]
+    return element
+
+def algo_anti_adaptation (vecteur_hexad, vecteur_motivation):
+    score_min = +1000000
+    element = vecteur_hexad[0][0]
+    for k in range (len(vecteur_hexad)):
+        for i in range(len(vecteur_motivation)):
+            if vecteur_hexad[k][0] == vecteur_motivation[k][0]:
+                if vecteur_hexad[k][1] + vecteur_motivation[i][1] < score_min:
+                    element = vecteur_hexad[k][0]
+                    score_max = vecteur_hexad[k][1] + vecteur_motivation[i][1]
+    return element
+
+def groupe ():
     eleves = pd.read_csv("donnees_eleves/userStats.csv", sep=";")
+    groupe_prop_ok = []
+    groupe_prop_not_ok = []
+    for i in range(len(eleves['User'])):
+        eleve = eleves.iloc[i, :]
+        liste_motiv = vecteur_influence_Motivation(eleve)
+        liste_motiv = replace_name_element(liste_motiv)
+        liste_hexad = vecteur_influence_Hexad(eleve)
+        liste_hexad = replace_name_element(liste_hexad)
+        #element = algo_adaptation(liste_hexad, liste_motiv)
+        element = algo_adaptation2(liste_hexad, liste_motiv)
+        anti_element = algo_anti_adaptation(liste_hexad, liste_motiv)
+        #print(element)
+        #print(eleve['GameElement'])
+        #print()
+        if element == eleve['GameElement'] :
+            groupe_prop_ok.append(eleve)
+        else :
+            """if anti_element == eleve['GameElement']:
+                groupe_prop_not_ok.append(eleve)"""
+            groupe_prop_not_ok.append(eleve)
+    print(len(groupe_prop_ok))
+    print(len(groupe_prop_not_ok))
+    return groupe_prop_ok, groupe_prop_not_ok
+
+
+
+def satisfaction (eleve):
+    ratio_question = int(eleve['CorrectCount']) / int(eleve['QuestionCount'])
+    #print(ratio_question)
+    ratio_quizz = int(eleve['PassedQuizCount']) / int(eleve['QuizCount'])
+    #print(ratio_quizz)
+    time_eleve = eleve['Time'].split(':')
+    time = int(time_eleve[0])*3600 + int(time_eleve[1])*60 + int(time_eleve[2])
+    ratio_time = time / 11867
+    #print(ratio_time)
+    somme_mot = int(eleve['micoVar']) + int(eleve['miacVar']) + int(eleve['mistVar']) + int(eleve['meidVar']) + int(eleve['meinVar']) + int(eleve['mereVar']) - int(eleve['amotVar'])
+    #print(somme_mot)
+    ratio_mot = (somme_mot + 46) / 94
+    #print(ratio_mot)
+    #return (ratio_time + ratio_quizz + ratio_question + ratio_mot) / 4
+    return somme_mot
+
+def calcul_ratio_moyen (groupe):
+    somme = 0
+    liste = []
+    for k in range (len(groupe)):
+        somme = somme + satisfaction(groupe[k])
+        liste.append(satisfaction(groupe[k]))
+    return somme / len(groupe), liste
+
+def test_t (list_satisfaction_ok, list_satisfaction_not_ok):
+    test = stats.ttest_ind(list_satisfaction_ok, list_satisfaction_not_ok, equal_var=True)
+    print(test)
+
+
+if __name__ == '__main__':
+    groupe_prop_ok, groupe_prop_not_ok = groupe()
+    moyenne_groupe_ok, list_ok = calcul_ratio_moyen(groupe_prop_ok)
+    print(moyenne_groupe_ok)
+    moyenne_groupe_not_ok, list_not_ok = calcul_ratio_moyen(groupe_prop_not_ok)
+    print(moyenne_groupe_not_ok)
+    test_t(list_ok, list_not_ok)
+    """eleves = pd.read_csv("donnees_eleves/userStats.csv", sep=";")
+    for i in range(len(eleves['User'])) :
+        eleve = eleves.iloc[i, :]
+        sati = satisfaction(eleve)
+        if sati < 0 or sati >1 :
+            print("PROBLEME")"""
+
+    """#On choisit un eleve
+    eleves = pd.read_csv("donnees_eleves/userStats.csv", sep=";")
+    print(len(eleves['User']))
     for i in range(300):
 
         eleve = eleves.iloc[i, :]
     #print(type(eleve))
     #On lit les fichiers et on calcule
-        vecteur_influence_Hexad(eleve)
-        liste_test = vecteur_influence_Motivation(eleve)
-        liste_test = replace_name_element(liste_test)
-        print(liste_test)
-
-    """#On replace les numero par les noms des éléments ludiques
-    influence_disruptor = replace_name_element(influence_disruptor[0])
-    influence_player =replace_name_element(influence_player[0])
-    influence_philanthropist = replace_name_element(influence_philanthropist[0])
-    influence_socialiser = replace_name_element(influence_socialiser[0])
-    influence_freeSpirit = replace_name_element(influence_freeSpirit[0])
-    influence_achiever = replace_name_element(influence_achiever[0])
-
-    influence_ME = replace_name_element(influence_ME[0])
-    influence_MI = replace_name_element(influence_MI[0])
-    influence_amotI = replace_name_element(influence_amotI[0])"""
-    # print(influence_MI)
-    # print(influence_ME)
-    # print(influence_amotI)
-
-
-
-
-
-
-
+        #vecteur_influence_Hexad(eleve)
+        liste_motiv = vecteur_influence_Motivation(eleve)
+        liste_motiv = replace_name_element(liste_motiv)
+        #print(liste_motiv)
+        liste_hexad = vecteur_influence_Hexad(eleve)
+        liste_hexad = replace_name_element(liste_hexad)
+        #print(liste_hexad)
+        element = algo_adaptation(liste_hexad, liste_motiv)
+        print(element)
+    eleve = eleves.iloc[4, :]
+    liste_motiv = vecteur_influence_Motivation(eleve)
+    liste_motiv = replace_name_element(liste_motiv)
+    #print(liste_motiv)
+    # print(liste_motiv)
+    liste_hexad = vecteur_influence_Hexad(eleve)
+    liste_hexad = replace_name_element(liste_hexad)
+    #print(liste_hexad)
+    element = algo_adaptation(liste_hexad, liste_motiv)
+    print(element)"""
